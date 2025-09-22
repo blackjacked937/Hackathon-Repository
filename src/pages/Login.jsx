@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // para redirección
+import { supabase } from "../supabaseClient"; // tu cliente de supabase
 
 const JSIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -25,12 +26,54 @@ const TailwindIcon = (props) => (
 
 function Login() {
   const [isLogin, setIsLogin] = useState(true);
+  const [nombre, setNombre] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Aquí podrías enviar datos al backend
-    navigate("/main"); // redirige a main
+    setErrorMsg("");
+
+    if (!isLogin) {
+      // Registro en tabla 'usuarios'
+      if (password !== confirmPassword) {
+        setErrorMsg("Las contraseñas no coinciden");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("usuarios")
+        .insert([{ nombre, email, password }]); // ⚠️ texto plano por ahora
+
+      if (error) {
+        setErrorMsg(error.message);
+      } else {
+        alert("Usuario registrado con éxito!");
+        setIsLogin(true);
+        setNombre("");
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+      }
+    } else {
+      // Login simple verificando tabla
+      const { data, error } = await supabase
+        .from("usuarios")
+        .select("*")
+        .eq("email", email)
+        .eq("password", password)
+        .single();
+
+      if (error || !data) {
+        setErrorMsg("Email o contraseña incorrecta");
+      } else {
+        navigate("/main");
+      }
+    }
   };
 
   return (
@@ -62,12 +105,26 @@ function Login() {
 
           <form onSubmit={handleSubmit}>
             <div className="space-y-6">
+              {!isLogin && (
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Nombre"
+                    className="w-full bg-black/30 border border-gray-700 rounded-lg p-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
               <div>
                 <input
                   type="email"
                   id="email"
                   className="w-full bg-black/30 border border-gray-700 rounded-lg p-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   placeholder="Email Address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -77,6 +134,8 @@ function Login() {
                   id="password"
                   className="w-full bg-black/30 border border-gray-700 rounded-lg p-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
@@ -87,6 +146,8 @@ function Login() {
                     id="confirmPassword"
                     className="w-full bg-black/30 border border-gray-700 rounded-lg p-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                   />
                 </div>
@@ -103,6 +164,8 @@ function Login() {
                 </a>
               )}
             </div>
+
+            {errorMsg && <p className="text-red-500 mt-2 text-center">{errorMsg}</p>}
 
             <button
               type="submit"
