@@ -17,16 +17,27 @@ const handleSubmit = async (e) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         amount,
-        method,
-        description,
         receiverWalletUrl: "https://ilp.interledger-test.dev/pruebalma"
       }),
     });
+
     const data = await res.json();
 
     if (data.interactUrl) {
-      window.open(data.interactUrl, "_blank");
-      alert("Se ha creado el cobro. Confirma el pago en la ventana que se abrió.");
+      const win = window.open(data.interactUrl, "_blank");
+      alert("Confirma el pago en la ventana que se abrió. Luego presiona OK para completar la transacción.");
+
+      const completeRes = await fetch("http://localhost:4000/api/complete-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          outgoingPaymentGrantId: data.outgoingPaymentGrantId,
+          interact_ref: "e1ae0cb7-d4fc-4204-944b-68f9112c4e77"
+        }),
+      });
+
+      const completeData = await completeRes.json();
+      alert(completeData.message || "Transacción completada");
     } else {
       alert("Cobro creado, pero no se pudo generar URL de interacción.");
     }
@@ -41,13 +52,12 @@ const handleSubmit = async (e) => {
   }
 };
 
-
   return (
     <div className="flex min-h-screen bg-[#0d111e] text-gray-200 font-sans">
       {/* Sidebar */}
        <aside className="w-64 bg-black/20 backdrop-blur-md border-r border-gray-700/50 p-6 flex flex-col">
               <div className="mb-8">
-                <h2 className="text-2xl font-bold mb-2 text-white">Paynoir</h2>
+                <h2 className="text-2xl font-bold mb-2 text-white">Pay4all</h2>
                 <p className="text-sm text-gray-400">Panel de control</p>
               </div>
               <nav className="space-y-2 flex-1">

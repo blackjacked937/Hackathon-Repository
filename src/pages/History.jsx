@@ -43,7 +43,7 @@ export default function History() {
       {/* Sidebar */}
       <aside className="w-64 bg-black/20 backdrop-blur-md border-r border-gray-700/50 p-6 flex flex-col">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-2 text-white">Paynoir</h2>
+          <h2 className="text-2xl font-bold mb-2 text-white">Pay4all</h2>
           <p className="text-sm text-gray-400">Panel de control</p>
         </div>
          <nav className="space-y-2 flex-1">
