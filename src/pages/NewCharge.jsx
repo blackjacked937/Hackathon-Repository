@@ -9,13 +9,38 @@ export default function NewCharge() {
   const [method, setMethod] = useState('Efectivo');
   const [description, setDescription] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert(`Cobro creado: ${amount} MXN - ${method} - ${description}`);
-    setAmount('');
-    setMethod('Efectivo');
-    setDescription('');
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await fetch("http://localhost:4000/api/new-charge", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount,
+        method,
+        description,
+        receiverWalletUrl: "https://ilp.interledger-test.dev/pruebalma"
+      }),
+    });
+    const data = await res.json();
+
+    if (data.interactUrl) {
+      window.open(data.interactUrl, "_blank");
+      alert("Se ha creado el cobro. Confirma el pago en la ventana que se abrió.");
+    } else {
+      alert("Cobro creado, pero no se pudo generar URL de interacción.");
+    }
+
+    setAmount("");
+    setMethod("Efectivo");
+    setDescription("");
+
+  } catch (err) {
+    console.error(err);
+    alert("Error al crear cobro: " + err.message);
+  }
+};
+
 
   return (
     <div className="flex min-h-screen bg-[#0d111e] text-gray-200 font-sans">
