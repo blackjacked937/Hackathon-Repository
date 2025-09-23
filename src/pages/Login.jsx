@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // para redirección
-import { supabase } from "../supabaseClient"; // tu cliente de supabase
+import { useNavigate } from "react-router-dom"; 
+import { supabase } from "../supabaseClient"; 
 
 const JSIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -39,7 +39,6 @@ function Login() {
     setErrorMsg("");
 
     if (!isLogin) {
-      // Registro en tabla 'usuarios'
       if (password !== confirmPassword) {
         setErrorMsg("Las contraseñas no coinciden");
         return;
@@ -47,7 +46,7 @@ function Login() {
 
       const { data, error } = await supabase
         .from("usuarios")
-        .insert([{ nombre, email, password }]); // ⚠️ texto plano por ahora
+        .insert([{ nombre, email, password }]); 
 
       if (error) {
         setErrorMsg(error.message);
@@ -60,7 +59,6 @@ function Login() {
         setConfirmPassword("");
       }
     } else {
-      // Login simple verificando tabla
       const { data, error } = await supabase
         .from("usuarios")
         .select("*")
